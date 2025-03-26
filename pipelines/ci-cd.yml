@@ -1,0 +1,75 @@
+name: Smart CI/CD
+
+on:
+  push:
+    branches: [main, release/qat, release/prod]
+  pull_request:
+    branches: [main]
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      adf: ${{ steps.filter.outputs.adf }}
+      functions: ${{ steps.filter.outputs.functions }}
+      terraform: ${{ steps.filter.outputs.terraform }}
+      databricks: ${{ steps.filter.outputs.databricks }}
+      powerbi: ${{ steps.filter.outputs.powerbi }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            adf: ['adf/**']
+            functions: ['functions/**']
+            terraform: ['terraform/**']
+            databricks: ['databricks/**']
+            powerbi: ['powerbi/**']
+
+  adf:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.adf == 'true'
+    uses: ./.github/workflows/reusable/deploy-adf.yml
+    with:
+      environment: ${{ github.ref_name }}
+
+  functions:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.functions == 'true'
+    uses: ./.github/workflows/reusable/deploy-functions.yml
+    with:
+      environment: ${{ github.ref_name }}
+
+  terraform:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.terraform == 'true'
+    uses: ./.github/workflows/reusable/deploy-terraform.yml
+    with:
+      environment: ${{ github.ref_name }}
+
+  databricks:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.databricks == 'true'
+    uses: ./.github/workflows/reusable/deploy-databricks.yml
+    with:
+      environment: ${{ github.ref_name }}
+
+  powerbi:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.powerbi == 'true'
+    uses: ./.github/workflows/reusable/deploy-powerbi.yml
+    with:
+      environment: ${{ github.ref_name }}
+
+  tag-release:
+    if: github.ref == 'refs/heads/release/prod' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Tag release
+        run: |
+          VERSION="v$(date +'%Y.%m.%d-%H%M')"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git tag $VERSION
+          git push origin $VERSION

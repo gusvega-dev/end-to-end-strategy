@@ -1,0 +1,8 @@
+name: Deploy ADF
+on: [workflow_call]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Deploying ADF to ${{ inputs.environment }}'

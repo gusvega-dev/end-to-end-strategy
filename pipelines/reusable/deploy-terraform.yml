@@ -1,0 +1,8 @@
+name: Deploy Terraform
+on: [workflow_call]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Running Terraform for ${{ inputs.environment }}'

@@ -1,0 +1,8 @@
+name: Deploy Power BI
+on: [workflow_call]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Deploying Power BI for ${{ inputs.environment }}'

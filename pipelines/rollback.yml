@@ -1,0 +1,39 @@
+name: Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to rollback to'
+        required: true
+
+jobs:
+  rollback:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ github.event.inputs.tag }}
+
+      - name: Rollback Terraform
+        run: |
+          cd terraform
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Rollback Functions
+        run: |
+          cd functions
+          func azure functionapp publish your-app-name
+
+      - name: Redeploy ADF
+        run: |
+          echo "Redeploying ADF templates..."
+
+      - name: Redeploy Databricks
+        run: |
+          echo "Re-importing notebooks..."
+
+      - name: Redeploy Power BI
+        run: |
+          echo "Restoring PBIX files..."

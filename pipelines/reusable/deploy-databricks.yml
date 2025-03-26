@@ -1,0 +1,8 @@
+name: Deploy Databricks
+on: [workflow_call]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Deploying Databricks for ${{ inputs.environment }}'
